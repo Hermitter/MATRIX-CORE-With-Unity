@@ -16,14 +16,32 @@ io.on("connection", function(socket) {
     UV: false
   };
 
-  // Setup Sensor Event listeners
+  // - Constant loop
+  send_event = function(sensor, delay, callback) {
+    // If sensor is called
+    if (sensors_desired[sensor]) {
+      callback();
+      // Run function again with delay
+      setTimeout(function() {
+        send_event(sensor, delay, callback);
+      }, delay);
+    }
+  };
+
+  // Configure Sensor Events
   for (let sensor in sensors_desired) {
-    // Sensors Start Event Listeners
+    // Sensor Start Event Listener
     socket.on(sensor + " start", function() {
       sensors_desired[sensor] = true;
       console.log("Sending " + sensor + " data...");
+
+      // Begin sending sensor data
+      send_event(sensor, sensors.config[sensor].update_rate * 1000, function() {
+        socket.volatile.emit(sensor + " data", sensors.data[sensor]);
+      });
     });
-    // Sensor Stop Event Listeners
+
+    // Sensor Stop Event Listener
     socket.on(sensor + " stop", function() {
       sensors_desired[sensor] = false;
       console.log("Stopping " + sensor + " data...");
@@ -33,24 +51,3 @@ io.on("connection", function(socket) {
   // Confirm that sever is ready
   socket.emit("initialized");
 });
-
-// FUNCTIONS \\
-function emit_repeating_data(data, delay) {}
-
-
-///////////////////////////////////////////////////////////
-// TEST BLOCK REMOVE AFTER!!!!!!!!!!!!!
-
-// function emit_sensor_data() {
-//   async.forEachOf(sensors_desired, function(value, sensor, callback) {
-//       if (sensors_desired[sensor]) {
-//         socket.volatile.emit(sensor + " data", sensors.data[sensor]);
-//       }
-//       callback();
-//     },function() {setTimeout(emit_sensor_data, 50);}
-//   );
-// }
-// emit_sensor_data();
-
-// TEST BLOCK REMOVE AFTER!!!!!!!!!!!!!
-///////////////////////////////////////////////////////////
