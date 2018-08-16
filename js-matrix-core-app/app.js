@@ -1,7 +1,6 @@
 // INITIAL VARIABLES \\
 const io = require("socket.io")(6001); // Start socket.io server
 const sensors = require("./core_libraries/sensors.js"); // MATRIX CORE sensors
-const async = require("async");
 console.log("\nServer Started!\n");
 
 // SOCKET.IO \\
