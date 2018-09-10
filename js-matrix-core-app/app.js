@@ -8,17 +8,16 @@ io.on("connection", function(socket) {
   console.log("Client Connected\n");
 
   // Sensor data to send
-  let sensors_desired = {
+  let activeSensors = {
     Humidity: false,
     Imu: false,
     Pressure: false,
     UV: false
   };
 
-  // - Constant loop
-  send_event = function(sensor, delay, callback) {
-    // If sensor is called
-    if (sensors_desired[sensor]) {
+  // - Endless loop
+  function send_event(sensor, delay, callback) {
+    if (activeSensors[sensor]) {
       callback();
       // Run function again with delay
       setTimeout(function() {
@@ -28,11 +27,11 @@ io.on("connection", function(socket) {
   };
 
   // Configure Sensor Events
-  for (let sensor in sensors_desired) {
+  for (let sensor in activeSensors) {
     // Sensor Start Event Listener
     socket.on(sensor + " start", function() {
-      sensors_desired[sensor] = true;
-      console.log("Sending " + sensor + " data...");
+      activeSensors[sensor] = true;
+      console.log("Sending " + sensor + " data...\n");
 
       // Begin sending sensor data
       send_event(sensor, sensors.config[sensor].update_rate * 1000, function() {
@@ -42,11 +41,11 @@ io.on("connection", function(socket) {
 
     // Sensor Stop Event Listener
     socket.on(sensor + " stop", function() {
-      sensors_desired[sensor] = false;
-      console.log("Stopping " + sensor + " data...");
+      activeSensors[sensor] = false;
+      console.log("Stopping " + sensor + " data...\n");
     });
   }
 
   // Confirm that sever is ready
-  socket.emit("initialized");
+  socket.emit("Initialized");
 });
